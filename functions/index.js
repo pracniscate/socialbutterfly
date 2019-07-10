@@ -12,7 +12,9 @@ exports.helloWorld = functions.https.onRequest((request, response) => {
 
 exports.getShouts = functions.https.onRequest((req, res) => {
     // need access to the database
-    admin.firestore().collection('shouts').get()
+    admin
+        .firestore().collection('shouts')
+        .get()
         .then(data => {
             let shouts = [];
             data.forEach(doc => {
@@ -22,3 +24,26 @@ exports.getShouts = functions.https.onRequest((req, res) => {
         })
         .catch(err => console.error(err));
 })
+
+// function to create documents
+exports.createShout = functions.https.onRequest((req, res) => {
+    // initialize shout
+    const newShout = {
+        body: req.body.body,
+        userHandle: req.body.userHandle,
+        createdAt: admin.firestore.Timestamp.fromDate(new Date())
+    };
+
+    // persist into database
+    admin
+        .firestore()
+        .collection('shouts')
+        .add(newShout)
+        .then(doc => {
+            res.json({ message: `document ${doc.id} created successfully`}).stringify
+        })
+        .catch(err => {
+            res.status(500).json({ error: 'something went wrong' });
+            console.error(err);
+        });
+});
