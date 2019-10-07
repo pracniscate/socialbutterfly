@@ -10,6 +10,8 @@ app.get('/shouts', (req, res) => {
     admin
         .firestore()
         .collection('shouts')
+        // show the latest shout first
+        .orderBy('createdAt', 'desc')
         .get()
         .then(data => {
             let shouts = [];
