@@ -3,17 +3,13 @@ const admin = require('firebase-admin');
 
 admin.initializeApp();
 
-// // Create and Deploy Your First Cloud Functions
-// // https://firebase.google.com/docs/functions/write-firebase-functions
-//
-exports.helloWorld = functions.https.onRequest((request, response) => {
- response.send("Hello from Firebase!");
-});
+const express = require('express');
+const app = express();
 
-exports.getShouts = functions.https.onRequest((req, res) => {
-    // need access to the database
+app.get('/shouts', (req, res) => {
     admin
-        .firestore().collection('shouts')
+        .firestore()
+        .collection('shouts')
         .get()
         .then(data => {
             let shouts = [];
@@ -26,7 +22,7 @@ exports.getShouts = functions.https.onRequest((req, res) => {
 })
 
 // function to create documents
-exports.createShout = functions.https.onRequest((req, res) => {
+app.post('/shout', (req, res) => {
     // initialize shout
     const newShout = {
         body: req.body.body,
@@ -47,3 +43,7 @@ exports.createShout = functions.https.onRequest((req, res) => {
             console.error(err);
         });
 });
+
+// https://baseurl.com/api/
+
+exports.api = functions.https.onRequest(app);
