@@ -1,7 +1,7 @@
 // this file is just for reference
 
 let db = {
-  screams: [
+  shouts: [
     {
       // userHandle identifies the owner of the shout
       userHandle: 'user',

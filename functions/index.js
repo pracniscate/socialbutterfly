@@ -18,9 +18,10 @@ const firebaseConfig = {
 const firebase = require('firebase');
 firebase.initializeApp(firebaseConfig);
 
+const db = admin.firestore();
+
 app.get('/shouts', (req, res) => {
-    admin
-        .firestore()
+    db
         .collection('shouts')
         // show the latest shout first
         .orderBy('createdAt', 'desc')
@@ -51,8 +52,7 @@ app.post('/shout', (req, res) => {
     };
 
     // persist into database
-    admin
-        .firestore()
+    db
         .collection('shouts')
         .add(newShout)
         .then(doc => {
