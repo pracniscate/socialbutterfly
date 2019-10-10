@@ -73,6 +73,8 @@ app.post("/signup", (req, res) => {
   };
 
   // validate data
+  let token, userId;
+
   db.doc(`/users/${newUser.handle}`)
     .get()
     .then(doc => {
@@ -85,16 +87,28 @@ app.post("/signup", (req, res) => {
       }
     })
     .then(data => {
+      userId = data.user.uid;
       return data.user.getIdToken();
     })
-    .then(token => {
+    .then(idToken => {
+      token = idToken;
+      const userCredentials = {
+        handle: newUser.handle,
+        email: newUser.email,
+        createdAt: new Date().toISOString(),
+        userId
+      };
+      // persist credentials into the users collection
+      return db.doc(`/users/${newUser.handle}`).set(userCredentials);
+    })
+    .then(() => {
       return res.status(201).json({ token });
     })
     .catch(err => {
       console.error(err);
       if (err.code === "auth/email-already-in-use") {
         return res.status(400).json({ email: "email is already in use" });
-    } else {
+      } else {
         return res.status(500).json({ error: err.code });
       }
     });
