@@ -63,6 +63,19 @@ app.post("/shout", (req, res) => {
     });
 });
 
+// determine if the string is empty
+const isEmpty = (string) => {
+  if (string.trim() === '') return true;
+  else return false;
+}
+
+// check if email is valid
+const isEmail = (email) => {
+  const regEx = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  if (email.match(regEx)) return true;
+  else return false;
+}
+
 // signup route
 app.post("/signup", (req, res) => {
   const newUser = {
@@ -71,6 +84,26 @@ app.post("/signup", (req, res) => {
     confirmPassword: req.body.confirmPassword,
     handle: req.body.handle
   };
+
+  let errors = {};
+
+  // if email is blank
+  if (isEmpty(newUser.email)){
+    errors.email = 'must not be empty'
+  } else if (!isEmail(newUser.email)) {
+    errors.email = 'must be a valid address'
+  }
+
+  // if password is blank
+  if (isEmpty(newUser.password)) errors.password = 'must not be empty';
+  // do passwords match?
+  if (newUser.password !== newUser.confirmPassword) errors.confirmPassword = 'passwords must match';
+  // if handle is blank
+  if (isEmpty(newUser.handle)) errors.handle = 'must not be empty';
+
+  // make sure the error object is empty!
+  // if there are any errors: 
+  if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
   // validate data
   let token, userId;
