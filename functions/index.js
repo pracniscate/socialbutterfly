@@ -43,6 +43,10 @@ app.get("/shouts", (req, res) => {
 
 // function to create documents
 app.post("/shout", (req, res) => {
+  // do not allow empty shouts
+  if (req.body.body.trim() === ""){
+    return res.status(400).json({ body: 'cannot post an empty message '});
+  }
   // initialize shout
   const newShout = {
     body: req.body.body,
