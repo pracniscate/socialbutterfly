@@ -41,8 +41,36 @@ app.get("/shouts", (req, res) => {
     .catch(err => console.error(err));
 });
 
+const FBAuth = (req, res, next) => {
+  let idToken;
+  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer ")){
+    idToken = req.headers.authorization.split('Bearer ')[1];
+  } else {
+    console.error('No token found.')
+    return res.status(403).json({ error: 'Unauthorized'});
+  }
+
+  admin.auth().verifyIdToken(idToken)
+    .then(decodedToken => {
+      req.user = decodedToken;
+      console.log(decodedToken);
+      return db.collection('users')
+        .where('userId', '==', req.user.uid)
+        .limit(1)
+        .get();
+    })
+    .then(data => {
+      req.user.handle = data.docs[0].data().handle;
+      return next();
+    })
+    .catch(err => {
+      console.error('Error verifying token ', err);
+      return res.status(403).json(err);
+    })
+}
+
 // function to create documents
-app.post("/shout", (req, res) => {
+app.post("/shout", FBAuth, (req, res) => {
   // do not allow empty shouts
   if (req.body.body.trim() === ""){
     return res.status(400).json({ body: 'cannot post an empty message '});
@@ -50,7 +78,7 @@ app.post("/shout", (req, res) => {
   // initialize shout
   const newShout = {
     body: req.body.body,
-    userHandle: req.body.userHandle,
+    userHandle: req.user.handle,
     createdAt: new Date().toISOString()
   };
 
